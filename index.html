@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ذكرني</title>
+        <link rel="icon" href="img/png-clipart-capsule-pharmacy-pharmaceutical-drug-blue-logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -12,20 +13,17 @@
             --primary-dark: #564FD8;
             --secondary-color: #FF6584;
             --accent-color: #36D1DC;
-            /* Light Theme Variables */
             --background-color-light: #F8FAFC;
             --card-color-light: #FFFFFF;
             --text-color-light: #0F172A;
             --light-text-light: #64748B;
             --border-color-light: #E2E8F0;
-            /* Dark Theme Variables */
             --background-color-dark: #0F172A;
             --card-color-dark: #1E293B;
             --text-color-dark: #F8FAFC;
             --light-text-dark: #94A3B8;
             --border-color-dark: #334155;
 
-            /* Default to Light Theme */
             --background-color: var(--background-color-light);
             --card-color: var(--card-color-light);
             --text-color: var(--text-color-light);
@@ -39,7 +37,6 @@
         }
 
         body.dark-mode {
-            /* Switch to Dark Theme */
             --background-color: var(--background-color-dark);
             --card-color: var(--card-color-dark);
             --text-color: var(--text-color-dark);
@@ -59,8 +56,6 @@
             line-height: 1.6; padding: 20px; min-height: 100vh;
         }
         
-        /* ### START CHANGE: Single "Reveal" Animation ### */
-        /* هذا هو الأنيميشن الجديد الذي يقوم بحركة واحدة فقط */
         body::before {
             content: '';
             position: fixed;
@@ -70,18 +65,14 @@
             height: 100vh;
             background-color: var(--transition-bg, transparent);
             z-index: 9999;
-            /* الدائرة تبدأ صغيرة جداً (غير مرئية) في مكان الأيقونة */
             clip-path: circle(0% at var(--clip-x, 50%) var(--clip-y, 50%));
-            /* مدة الأنيميشن 0.6 ثانية */
             transition: clip-path 0.6s cubic-bezier(0.65, 0, 0.35, 1);
             pointer-events: none;
         }
 
-        /* عند إضافة هذا الكلاس، الدائرة تكبر لتغطي الشاشة */
         body.transition-active::before {
             clip-path: circle(150% at var(--clip-x, 50%) var(--clip-y, 50%));
         }
-        /* ### END CHANGE ### */
 
         .container { max-width: 1200px; margin: 0 auto; }
 
@@ -263,7 +254,7 @@
                        <i class="fas fa-moon"></i>
                   </div>
                   <div style="flex-grow: 1;"></div>
-                   <h1><i class="fas fa-pills"></i>ذكرني</h1>
+                   <h1><i class="fas fa-pills"></i> ذكرني </h1>
                   <div style="flex-grow: 1;"></div>
                   <div style="width: 70px;"></div>
              </div>
@@ -342,7 +333,6 @@
     <button id="back-to-top-btn" title="العودة للأعلى"><i class="fas fa-arrow-up"></i></button>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM Elements
             const weekContainer = document.getElementById('week-container');
             const weekTitle = document.getElementById('week-title');
             const prevWeekBtn = document.getElementById('prev-week');
@@ -366,7 +356,6 @@
             const reminderOk = document.getElementById('reminder-ok');
             const backToTopBtn = document.getElementById('back-to-top-btn');
 
-            // App State
             const daysOfWeek = ['الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد', 'الإثنين', 'الثلاثاء'];
             const arabicFullDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
             let medicineData = JSON.parse(localStorage.getItem('medicineData')) || {};
@@ -401,9 +390,7 @@
                 document.body.classList.toggle('dark-mode', savedTheme === 'dark');
             }
 
-            // ### START CHANGE: New "Single Reveal" Theme Toggle Function ###
             function toggleTheme() {
-                // نمنع تشغيل الأنيميشن مرة أخرى إذا كان يعمل بالفعل
                 if (document.body.classList.contains('transition-active')) {
                     return;
                 }
@@ -411,36 +398,27 @@
                 const root = document.documentElement;
                 const isDarkMode = document.body.classList.contains('dark-mode');
                 
-                // 1. نحصل على إحداثيات أيقونة تبديل المظهر
                 const rect = themeSwitcher.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
                 const y = rect.top + rect.height / 2;
 
-                // 2. نحدد لون الخلفية للطبقة الانتقالية (سيكون لون المظهر الجديد)
                 const targetBgColor = isDarkMode ? 'var(--background-color-light)' : 'var(--background-color-dark)';
                 
-                // 3. نُعين متغيرات CSS التي ستستخدمها طبقة ::before
                 root.style.setProperty('--clip-x', `${x}px`);
                 root.style.setProperty('--clip-y', `${y}px`);
                 root.style.setProperty('--transition-bg', targetBgColor);
                 
-                // 4. نضيف الكلاس الذي يبدأ الأنيميشن (تكبير الدائرة)
                 document.body.classList.add('transition-active');
                 
-                // 5. في منتصف مدة الأنيميشن، نقوم بتبديل المظهر الفعلي للصفحة
-                // هذا يضمن أن التبديل يحدث بسلاسة "تحت" الدائرة المتوسعة
                 setTimeout(() => {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', isDarkMode ? 'light' : 'dark');
-                }, 300); // نصف مدة الأنيميشن (600ms / 2)
+                }, 300); 
 
-                // 6. بعد انتهاء الأنيميشن، نزيل الكلاس لإعادة الحالة الافتراضية
-                // هذا يجهز الأنيميشن للنقرة التالية ويعيد الدائرة لحجم 0%
                 setTimeout(() => {
                     document.body.classList.remove('transition-active');
-                }, 600); // يجب أن تكون هذه المدة مطابقة لمدة transition في CSS
+                }, 600);
             }
-            // ### END CHANGE ###
             
             function getWeekOffsetForDate(date) {
                 const daysDiff = (date.getTime() - anchorDate.getTime()) / (1000 * 3600 * 24);
