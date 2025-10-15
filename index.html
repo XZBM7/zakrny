@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ذكرني</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD8;
+            --secondary-color: #FF6584;
+            --accent-color: #36D1DC;
+            /* Light Theme Variables */
+            --background-color-light: #F8FAFC;
+            --card-color-light: #FFFFFF;
+            --text-color-light: #0F172A;
+            --light-text-light: #64748B;
+            --border-color-light: #E2E8F0;
+            /* Dark Theme Variables */
+            --background-color-dark: #0F172A;
+            --card-color-dark: #1E293B;
+            --text-color-dark: #F8FAFC;
+            --light-text-dark: #94A3B8;
+            --border-color-dark: #334155;
+
+            /* Default to Light Theme */
+            --background-color: var(--background-color-light);
+            --card-color: var(--card-color-light);
+            --text-color: var(--text-color-light);
+            --light-text: var(--light-text-light);
+            --border-color: var(--border-color-light);
+            
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --radius: 16px;
+            --transition: all 0.3s ease;
+            --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        }
+
+        body.dark-mode {
+            /* Switch to Dark Theme */
+            --background-color: var(--background-color-dark);
+            --card-color: var(--card-color-dark);
+            --text-color: var(--text-color-dark);
+            --light-text: var(--light-text-dark);
+            --border-color: var(--border-color-dark);
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6; padding: 20px; min-height: 100vh;
+        }
+        
+        /* ### START CHANGE: Single "Reveal" Animation ### */
+        /* هذا هو الأنيميشن الجديد الذي يقوم بحركة واحدة فقط */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--transition-bg, transparent);
+            z-index: 9999;
+            /* الدائرة تبدأ صغيرة جداً (غير مرئية) في مكان الأيقونة */
+            clip-path: circle(0% at var(--clip-x, 50%) var(--clip-y, 50%));
+            /* مدة الأنيميشن 0.6 ثانية */
+            transition: clip-path 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+            pointer-events: none;
+        }
+
+        /* عند إضافة هذا الكلاس، الدائرة تكبر لتغطي الشاشة */
+        body.transition-active::before {
+            clip-path: circle(150% at var(--clip-x, 50%) var(--clip-y, 50%));
+        }
+        /* ### END CHANGE ### */
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            text-align: center; margin-bottom: 40px; padding: 30px;
+            background: var(--gradient); border-radius: var(--radius);
+            box-shadow: var(--shadow); position: relative;
+            overflow: hidden; color: white;
+        }
+        
+        header::before {
+            content: ""; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: rgba(255, 255, 255, 0.1); transform: rotate(25deg);
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; }
+
+        .theme-switcher {
+            display: flex; align-items: center; justify-content: space-around;
+            background-color: rgba(0, 0, 0, 0.25);
+            padding: 5px; border-radius: 50px; cursor: pointer;
+            position: relative; width: 70px; height: 40px;
+        }
+        .theme-switcher-handle {
+            position: absolute; width: 30px; height: 30px;
+            background-color: var(--secondary-color); border-radius: 50%;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            top: 5px; right: 5px; 
+        }
+        body.dark-mode .theme-switcher-handle { transform: translateX(-30px); }
+        .theme-switcher i {
+            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+            color: white; z-index: 1;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        body:not(.dark-mode) .fa-sun { color: #fff; transform: scale(1.1) rotate(360deg); }
+        body.dark-mode .fa-moon { color: #fff; transform: scale(1.1) rotate(360deg); }
+        body:not(.dark-mode) .fa-moon, body.dark-mode .fa-sun { color: #eee; transform: scale(0.9) rotate(0deg); }
+
+        h1 { margin-bottom: 10px; font-size: 2.5rem; position: relative; font-weight: 800; }
+        .subtitle { font-size: 1.2rem; opacity: 0.9; font-weight: 300; }
+
+        .week-selector, .stats, .day-card, .historical-stats, .modal-content {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .week-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; }
+        .week-nav { display: flex; gap: 15px; }
+        .nav-btn {
+            background: var(--gradient); color: white; border: none; border-radius: 50%; width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .nav-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); }
+        .nav-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+        body.dark-mode .nav-btn:disabled { background: #475569; }
+        .week-title { font-size: 1.5rem; font-weight: 700; color: var(--text-color); text-align: center; flex-grow: 1; }
+        .today-btn {
+            background: var(--secondary-color); color: white; border: none; border-radius: 50px; padding: 12px 25px;
+            cursor: pointer; transition: var(--transition); font-weight: 600; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 10px rgba(255, 101, 132, 0.3);
+        }
+        .today-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(255, 101, 132, 0.4); }
+        .week-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .day-card { padding: 25px 15px; text-align: center; transition: var(--transition); position: relative; overflow: hidden; border: 2px solid transparent; }
+        .day-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); }
+        .day-card.today { border-color: var(--primary-color); }
+        .day-card.future { opacity: 0.7; }
+        .day-card.missed { border-color: var(--secondary-color); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 101, 132, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 101, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 101, 132, 0); } }
+        .day-name { font-weight: bold; margin-bottom: 10px; color: var(--primary-color); font-size: 1.2rem; }
+        .date { font-size: 1rem; color: var(--light-text); margin-bottom: 20px; }
+        .taken-btn {
+            background: var(--gradient); border: none; border-radius: 50px; padding: 12px 20px; cursor: pointer;
+            transition: var(--transition); font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center;
+            gap: 8px; color: white; box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+        }
+        .taken-btn.taken { background: var(--secondary-color); box-shadow: 0 4px 10px rgba(255, 101, 132, 0.3); }
+        .taken-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        body.dark-mode .taken-btn:disabled { background: #475569; color: #94A3B8; }
+        .stats { padding: 30px; margin-bottom: 40px; }
+        .stats h2, .historical-stats h2 { margin-bottom: 25px; color: var(--primary-color); display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 1.8rem; }
+        .stats-content { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 25px; }
+        .stat-item { flex: 1; min-width: 180px; text-align: center; padding: 20px; background: var(--background-color); border: 1px solid var(--border-color); border-radius: var(--radius); }
+        .stat-value { font-size: 3rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; }
+        .stat-label { color: var(--light-text); font-size: 1rem; }
+        .progress-container { margin: 25px 0; }
+        .progress-bar { height: 20px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .progress { height: 100%; background: var(--gradient); border-radius: 10px; transition: width 0.5s ease; position: relative; overflow: hidden; }
+        .progress::after {
+            content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background-image: linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+            background-size: 20px 20px; animation: move 1s linear infinite;
+        }
+        @keyframes move { 0% { background-position: 0 0; } 100% { background-position: 20px 0; } }
+        .actions { display: flex; justify-content: center; gap: 20px; margin-top: 30px; flex-wrap: wrap; }
+        .btn {
+            padding: 15px 30px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: var(--transition);
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-size: 1rem;
+        }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-secondary { background: var(--secondary-color); color: white; }
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-overlay .modal-content {
+            padding: 40px; max-width: 500px; width: 90%; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-overlay h2 { color: var(--secondary-color); margin-bottom: 20px; font-size: 1.8rem; }
+        .modal-overlay p { margin-bottom: 30px; font-size: 1.2rem; line-height: 1.8; color: var(--text-color); }
+        .modal-actions { display: flex; justify-content: center; gap: 15px; }
+
+        .historical-stats { padding: 30px; }
+        #historical-weeks-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .history-card { background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 20px; text-align: center; }
+        .history-card-title { font-weight: bold; font-size: 1.1rem; color: var(--primary-color); margin-bottom: 15px; }
+        .history-card-stats { font-size: 1.5rem; color: var(--text-color); }
+        .history-card-stats span { font-weight: bold; color: var(--secondary-color); }
+        .notification {
+            position: fixed; top: 30px; right: 30px; background: var(--gradient); color: white; padding: 20px 25px;
+            border-radius: var(--radius); box-shadow: var(--shadow); transform: translateX(150%); transition: transform 0.4s ease;
+            z-index: 3000; display: flex; align-items: center; gap: 15px; max-width: 400px;
+        }
+        .notification.show { transform: translateX(0); }
+
+        #back-to-top-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1500;
+        }
+
+        #back-to-top-btn.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #back-to-top-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) { .week-selector, .actions { flex-direction: column; gap: 20px; } .stats-content { flex-direction: column; gap: 20px; } .stat-item { min-width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+             <div class="header-top">
+                  <div class="theme-switcher" id="theme-switcher" title="تبديل المظهر">
+                       <div class="theme-switcher-handle"></div>
+                       <i class="fas fa-sun"></i>
+                       <i class="fas fa-moon"></i>
+                  </div>
+                  <div style="flex-grow: 1;"></div>
+                   <h1><i class="fas fa-pills"></i>ذكرني</h1>
+                  <div style="flex-grow: 1;"></div>
+                  <div style="width: 70px;"></div>
+             </div>
+            <p class="subtitle">سجل تناول الدواء الخاص بك يومياً وابق على المسار الصحيح</p>
+        </header>
+
+        <div class="week-selector">
+            <div class="week-nav">
+                <button class="nav-btn" id="prev-week" title="الأسبوع السابق"><i class="fas fa-chevron-right"></i></button>
+                <button class="nav-btn" id="next-week" title="الأسبوع التالي"><i class="fas fa-chevron-left"></i></button>
+            </div>
+            <div class="week-title" id="week-title"></div>
+            <button class="today-btn" id="today-btn"><i class="fas fa-calendar-day"></i> اليوم</button>
+        </div>
+
+        <div class="week-container" id="week-container"></div>
+
+        <div class="stats">
+            <h2><i class="fas fa-chart-line"></i> إحصائيات هذا الأسبوع</h2>
+            <div class="stats-content">
+                <div class="stat-item">
+                    <div class="stat-value" id="taken-days">0</div>
+                    <div class="stat-label">أيام تم تناول الدواء</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="missed-days">0</div>
+                    <div class="stat-label">أيام فائتة</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completion-rate">0%</div>
+                    <div class="stat-label">معدل إنجاز الأسبوع</div>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar"><div class="progress" id="progress-bar"></div></div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" id="reset-btn"><i class="fas fa-redo"></i> إعادة تعيين الأسبوع</button>
+                <button class="btn btn-secondary" id="mark-all-btn"><i class="fas fa-check-double"></i> تعيين الكل كمنجز</button>
+            </div>
+        </div>
+
+        <div class="historical-stats" id="historical-stats">
+            <h2><i class="fas fa-calendar-check"></i> سجل الأسابيع</h2>
+            <div id="historical-weeks-container">
+                <p id="no-history-msg" style="color: var(--light-text); text-align: center;">لا يوجد بيانات لعرضها بعد.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <div>تم تحديث الحالة بنجاح!</div>
+    </div>
+
+    <div class="modal-overlay" id="reminder-modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-bell"></i> تذكير يومي</h2>
+            <p>هل قمت بتسجيل تناول دوائك لـ <strong>اليوم</strong>؟</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="reminder-ok"><i class="fas fa-thumbs-up"></i> حسناً، لقد فهمت</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="confirmation-modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-exclamation-triangle"></i> تأكيد الإجراء</h2>
+            <p id="confirmation-message">هل أنت متأكد أنك تريد المتابعة؟</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="confirm-yes"><i class="fas fa-check"></i> نعم</button>
+                <button class="btn btn-secondary" id="confirm-no"><i class="fas fa-times"></i> إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="back-to-top-btn" title="العودة للأعلى"><i class="fas fa-arrow-up"></i></button>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const weekContainer = document.getElementById('week-container');
+            const weekTitle = document.getElementById('week-title');
+            const prevWeekBtn = document.getElementById('prev-week');
+            const nextWeekBtn = document.getElementById('next-week');
+            const todayBtn = document.getElementById('today-btn');
+            const takenDaysEl = document.getElementById('taken-days');
+            const missedDaysEl = document.getElementById('missed-days');
+            const completionRateEl = document.getElementById('completion-rate');
+            const progressBar = document.getElementById('progress-bar');
+            const resetBtn = document.getElementById('reset-btn');
+            const markAllBtn = document.getElementById('mark-all-btn');
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const historicalContainer = document.getElementById('historical-weeks-container');
+            const noHistoryMsg = document.getElementById('no-history-msg');
+            const notification = document.getElementById('notification');
+            const reminderModal = document.getElementById('reminder-modal');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const confirmYesBtn = document.getElementById('confirm-yes');
+            const confirmNoBtn = document.getElementById('confirm-no');
+            const confirmationMessage = document.getElementById('confirmation-message');
+            const reminderOk = document.getElementById('reminder-ok');
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+
+            // App State
+            const daysOfWeek = ['الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد', 'الإثنين', 'الثلاثاء'];
+            const arabicFullDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            let medicineData = JSON.parse(localStorage.getItem('medicineData')) || {};
+            let currentWeekOffset = 0;
+            const anchorDate = new Date(2025, 9, 15);
+            let onConfirmAction = null;
+
+            function initApp() {
+                setupTheme();
+                goToToday();
+                addEventListeners();
+                renderHistoricalStats();
+                checkTodaysReminder();
+            }
+
+            function addEventListeners() {
+                prevWeekBtn.addEventListener('click', () => changeWeek(-1));
+                nextWeekBtn.addEventListener('click', () => changeWeek(1));
+                todayBtn.addEventListener('click', goToToday);
+                themeSwitcher.addEventListener('click', toggleTheme);
+                confirmYesBtn.addEventListener('click', handleConfirmYes);
+                confirmNoBtn.addEventListener('click', () => confirmationModal.classList.remove('active'));
+                resetBtn.addEventListener('click', () => showConfirmation('هل أنت متأكد من إعادة تعيين بيانات هذا الأسبوع؟', resetWeekLogic));
+                markAllBtn.addEventListener('click', () => showConfirmation('هل تريد تعيين جميع الأيام الماضية في هذا الأسبوع كمنجزة؟', markAllAsTakenLogic));
+                reminderOk.addEventListener('click', () => reminderModal.classList.remove('active'));
+                window.addEventListener('scroll', handleScroll);
+                backToTopBtn.addEventListener('click', scrollToTop);
+            }
+            
+            function setupTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+            }
+
+            // ### START CHANGE: New "Single Reveal" Theme Toggle Function ###
+            function toggleTheme() {
+                // نمنع تشغيل الأنيميشن مرة أخرى إذا كان يعمل بالفعل
+                if (document.body.classList.contains('transition-active')) {
+                    return;
+                }
+
+                const root = document.documentElement;
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                
+                // 1. نحصل على إحداثيات أيقونة تبديل المظهر
+                const rect = themeSwitcher.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+
+                // 2. نحدد لون الخلفية للطبقة الانتقالية (سيكون لون المظهر الجديد)
+                const targetBgColor = isDarkMode ? 'var(--background-color-light)' : 'var(--background-color-dark)';
+                
+                // 3. نُعين متغيرات CSS التي ستستخدمها طبقة ::before
+                root.style.setProperty('--clip-x', `${x}px`);
+                root.style.setProperty('--clip-y', `${y}px`);
+                root.style.setProperty('--transition-bg', targetBgColor);
+                
+                // 4. نضيف الكلاس الذي يبدأ الأنيميشن (تكبير الدائرة)
+                document.body.classList.add('transition-active');
+                
+                // 5. في منتصف مدة الأنيميشن، نقوم بتبديل المظهر الفعلي للصفحة
+                // هذا يضمن أن التبديل يحدث بسلاسة "تحت" الدائرة المتوسعة
+                setTimeout(() => {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', isDarkMode ? 'light' : 'dark');
+                }, 300); // نصف مدة الأنيميشن (600ms / 2)
+
+                // 6. بعد انتهاء الأنيميشن، نزيل الكلاس لإعادة الحالة الافتراضية
+                // هذا يجهز الأنيميشن للنقرة التالية ويعيد الدائرة لحجم 0%
+                setTimeout(() => {
+                    document.body.classList.remove('transition-active');
+                }, 600); // يجب أن تكون هذه المدة مطابقة لمدة transition في CSS
+            }
+            // ### END CHANGE ###
+            
+            function getWeekOffsetForDate(date) {
+                const daysDiff = (date.getTime() - anchorDate.getTime()) / (1000 * 3600 * 24);
+                return Math.floor(daysDiff / 7);
+            }
+
+            function changeWeek(offset) {
+                currentWeekOffset += offset;
+                renderWeek();
+            }
+
+            function goToToday() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                currentWeekOffset = getWeekOffsetForDate(today);
+                renderWeek();
+            }
+
+            function renderWeek() {
+                weekContainer.innerHTML = '';
+                const startOfWeek = getStartOfWeek(currentWeekOffset);
+                updateWeekTitle(startOfWeek);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayWeekOffset = getWeekOffsetForDate(today);
+                prevWeekBtn.disabled = currentWeekOffset <= todayWeekOffset;
+                
+                for (let i = 0; i < 7; i++) {
+                    const currentDate = new Date(startOfWeek);
+                    currentDate.setDate(startOfWeek.getDate() + i);
+                    const dateString = formatDate(currentDate);
+                    const isTaken = medicineData[dateString] || false;
+                    const isToday = isSameDay(currentDate, today);
+                    const isFuture = currentDate > today;
+                    const isMissed = !isFuture && !isTaken && !isToday;
+
+                    const dayCard = document.createElement('div');
+                    dayCard.className = `day-card ${isToday ? 'today' : ''} ${isFuture ? 'future' : ''} ${isMissed ? 'missed' : ''}`;
+                    dayCard.innerHTML = `<div class="day-name">${daysOfWeek[i]}</div><div class="date">${formatDateDisplay(currentDate)}</div><button class="taken-btn ${isTaken ? 'taken' : ''}" data-date="${dateString}" ${isFuture ? 'disabled' : ''}><i class="fas ${isTaken ? 'fa-check-circle' : (isMissed ? 'fa-exclamation-circle' : 'fa-circle')}"></i>${isTaken ? 'تم أخذه' : (isFuture ? 'قادم' : (isMissed ? 'لم يؤخذ' : 'تسجيل أخذه'))}</button>`;
+                    weekContainer.appendChild(dayCard);
+                }
+
+                document.querySelectorAll('.taken-btn:not(:disabled)').forEach(btn => btn.addEventListener('click', toggleMedicineStatus));
+                updateStats();
+            }
+
+            function updateWeekTitle(startDate) {
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+                const startStr = formatDateDisplay(startDate);
+                const endStr = formatDateDisplay(endDate);
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayWeekOffset = getWeekOffsetForDate(today);
+                const currentDisplayWeekOffset = getWeekOffsetForDate(startDate);
+                const weekDiff = currentDisplayWeekOffset - todayWeekOffset;
+
+                let title;
+                if (weekDiff === 0) {
+                    title = 'الأسبوع الحالي';
+                } else if (weekDiff === 1) {
+                    title = 'الأسبوع القادم';
+                } else if (weekDiff === 2) {
+                    title = 'بعد أسبوعين';
+                } else if (weekDiff > 2) {
+                    if (weekDiff <= 10) {
+                        title = `بعد ${weekDiff} أسابيع`;
+                    } else {
+                        title = `بعد ${weekDiff} أسبوعًا`;
+                    }
+                } else {
+                    title = `أسبوع سابق`;
+                }
+                
+                weekTitle.textContent = `${title} (${startStr} - ${endStr})`;
+            }
+
+            function getStartOfWeek(weekOffset) {
+                const result = new Date(anchorDate);
+                result.setDate(result.getDate() + (weekOffset * 7));
+                return result;
+            }
+
+            function toggleMedicineStatus(e) {
+                const btn = e.target.closest('.taken-btn');
+                const dateString = btn.dataset.date;
+                
+                medicineData[dateString] = !medicineData[dateString];
+                localStorage.setItem('medicineData', JSON.stringify(medicineData));
+
+                const notificationMessage = medicineData[dateString] 
+                    ? 'تم تسجيل تناول الدواء بنجاح.' 
+                    : 'تم إلغاء تسجيل الدواء بنجاح.';
+                
+                showNotification(notificationMessage);
+
+                renderWeek();
+                renderHistoricalStats();
+            }
+
+            function updateStats() {
+                const startOfWeek = getStartOfWeek(currentWeekOffset);
+                let takenDays = 0, pastDaysInWeek = 0;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                for (let i = 0; i < 7; i++) {
+                    const currentDate = new Date(startOfWeek);
+                    currentDate.setDate(startOfWeek.getDate() + i);
+                    if (medicineData[formatDate(currentDate)]) takenDays++;
+                    if (currentDate <= today) pastDaysInWeek++;
+                }
+                const completionRate = Math.round((takenDays / 7) * 100);
+                const missedDays = pastDaysInWeek - takenDays;
+                takenDaysEl.textContent = takenDays;
+                missedDaysEl.textContent = missedDays < 0 ? 0 : missedDays;
+                completionRateEl.textContent = `${completionRate}%`;
+                progressBar.style.width = `${completionRate}%`;
+            }
+
+            function showConfirmation(message, action) {
+                confirmationMessage.textContent = message;
+                onConfirmAction = action;
+                confirmationModal.classList.add('active');
+            }
+            
+            function handleConfirmYes() {
+                if (typeof onConfirmAction === 'function') onConfirmAction();
+                confirmationModal.classList.remove('active');
+            }
+            
+            function resetWeekLogic() {
+                const startOfWeek = getStartOfWeek(currentWeekOffset);
+                for (let i = 0; i < 7; i++) {
+                    const currentDate = new Date(startOfWeek);
+                    currentDate.setDate(startOfWeek.getDate() + i);
+                    delete medicineData[formatDate(currentDate)];
+                }
+                localStorage.setItem('medicineData', JSON.stringify(medicineData));
+                renderWeek();
+                renderHistoricalStats();
+                showNotification('تمت إعادة تعيين بيانات الأسبوع');
+            }
+
+            function markAllAsTakenLogic() {
+                const startOfWeek = getStartOfWeek(currentWeekOffset);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                for (let i = 0; i < 7; i++) {
+                    const currentDate = new Date(startOfWeek);
+                    currentDate.setDate(startOfWeek.getDate() + i);
+                    if (currentDate <= today) medicineData[formatDate(currentDate)] = true;
+                }
+                localStorage.setItem('medicineData', JSON.stringify(medicineData));
+                renderWeek();
+                renderHistoricalStats();
+                showNotification('تم تعيين الأيام الماضية كمنجزة');
+            }
+            
+            function checkTodaysReminder() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayString = formatDate(today);
+                const lastReminderShownDate = localStorage.getItem('lastReminderShownDate');
+
+                if (lastReminderShownDate === todayString) {
+                    return; 
+                }
+
+                if (!medicineData[todayString]) {
+                    setTimeout(() => {
+                        reminderModal.classList.add('active');
+                        localStorage.setItem('lastReminderShownDate', todayString);
+                    }, 1500);
+                }
+            }
+            
+            function showNotification(message) {
+                notification.querySelector('div').textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 3000);
+            }
+
+            function renderHistoricalStats() {
+                const weeks = {};
+                Object.keys(medicineData).forEach(dateStr => {
+                    const date = new Date(dateStr);
+                    const weekIndex = getWeekOffsetForDate(date);
+                    const weekKey = formatDate(getStartOfWeek(weekIndex));
+                    if (!weeks[weekKey]) weeks[weekKey] = { taken: 0, start: getStartOfWeek(weekIndex) };
+                    if(medicineData[dateStr]) weeks[weekKey].taken++;
+                });
+                historicalContainer.innerHTML = '';
+                const today = new Date(); today.setHours(0,0,0,0);
+                const todayWeekOffset = getWeekOffsetForDate(today);
+                const sortedWeeks = Object.keys(weeks).sort((a,b) => new Date(a) - new Date(b)).filter(wk => getWeekOffsetForDate(new Date(wk)) >= todayWeekOffset);
+                if (sortedWeeks.length === 0) {
+                     historicalContainer.innerHTML = `<p id="no-history-msg" style="color: var(--light-text); text-align: center;">لا يوجد بيانات لعرضها بعد.</p>`;
+                     return;
+                }
+                sortedWeeks.forEach(weekKey => {
+                    const weekData = weeks[weekKey];
+                    const completionRate = Math.round((weekData.taken / 7) * 100);
+                    const endDate = new Date(weekData.start);
+                    endDate.setDate(endDate.getDate() + 6);
+                    const card = document.createElement('div');
+                    card.className = 'history-card';
+                    card.innerHTML = `<div class="history-card-title">أسبوع ${formatDateDisplay(weekData.start)} - ${formatDateDisplay(endDate)}</div><div class="history-card-stats">الإنجاز: <span>${completionRate}%</span> (${weekData.taken} من 7 أيام)</div>`;
+                    historicalContainer.appendChild(card);
+                });
+            }
+
+            function handleScroll() {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            }
+
+            function scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            function formatDate(date) { return date.toISOString().split('T')[0]; }
+            function formatDateDisplay(date) { return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }); }
+            function isSameDay(d1, d2) { return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate(); }
+
+            initApp();
+        });
+    </script>
+</body>
+</html>
